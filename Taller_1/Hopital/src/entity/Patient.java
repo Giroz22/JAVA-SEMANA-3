@@ -1,5 +1,6 @@
 package entity;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Patient {
@@ -7,14 +8,14 @@ public class Patient {
     private int id_patient;
     private String name;
     private String surname;
-    private Date birthdate;
+    private LocalDate birthdate;
     private String identification_document;
 
     //Constructors
     public Patient() {
     }
 
-    public Patient(int id_patient, String name, String surname, Date birthdate, String identification_document) {
+    public Patient(int id_patient, String name, String surname, LocalDate birthdate, String identification_document) {
         this.id_patient = id_patient;
         this.name = name;
         this.surname = surname;
@@ -48,11 +49,11 @@ public class Patient {
         this.surname = surname;
     }
 
-    public Date getBirthdate() {
+    public LocalDate getBirthdate() {
         return birthdate;
     }
 
-    public void setBirthdate(Date birthdate) {
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
 

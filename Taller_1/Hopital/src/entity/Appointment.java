@@ -1,25 +1,25 @@
 package entity;
 
-import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
-public class Appointments {
+public class Appointment {
     //Attributes
     private int id_appointment;
-    private int id_patient;
-    private int id_doctor;
-    private Date date_appointment;
-    private Time time_appointment;
+    private Patient objPatient;
+    private Doctor objDoctor;
+    private LocalDate date_appointment;
+    private LocalTime time_appointment;
     private String motive;
 
     //Constructors
-    public Appointments() {
+    public Appointment() {
     }
 
-    public Appointments(int id_appointment, int id_patient, int id_doctor, Date date_appointment, Time time_appointment, String motive) {
+    public Appointment(int id_appointment, Patient objPatient, Doctor objDoctor, LocalDate date_appointment, LocalTime time_appointment, String motive) {
         this.id_appointment = id_appointment;
-        this.id_patient = id_patient;
-        this.id_doctor = id_doctor;
+        this.objPatient = objPatient;
+        this.objDoctor = objDoctor;
         this.date_appointment = date_appointment;
         this.time_appointment = time_appointment;
         this.motive = motive;
@@ -35,35 +35,35 @@ public class Appointments {
         this.id_appointment = id_appointment;
     }
 
-    public int getId_patient() {
-        return id_patient;
+    public Patient getObjPatient() {
+        return objPatient;
     }
 
-    public void setId_patient(int id_patient) {
-        this.id_patient = id_patient;
+    public void setObjPatient(Patient objPatient) {
+        this.objPatient = objPatient;
     }
 
-    public int getId_doctor() {
-        return id_doctor;
+    public Doctor getObjDoctor() {
+        return objDoctor;
     }
 
-    public void setId_doctor(int id_doctor) {
-        this.id_doctor = id_doctor;
+    public void setObjDoctor(Doctor objDoctor) {
+        this.objDoctor = objDoctor;
     }
 
-    public Date getDate_appointment() {
+    public LocalDate getDate_appointment() {
         return date_appointment;
     }
 
-    public void setDate_appointment(Date date_appointment) {
+    public void setDate_appointment(LocalDate date_appointment) {
         this.date_appointment = date_appointment;
     }
 
-    public Time getTime_appointment() {
+    public LocalTime getTime_appointment() {
         return time_appointment;
     }
 
-    public void setTime_appointment(Time time_appointment) {
+    public void setTime_appointment(LocalTime time_appointment) {
         this.time_appointment = time_appointment;
     }
 
@@ -80,8 +80,8 @@ public class Appointments {
     public String toString() {
         return "Appointments{" +
                 "id_appointment=" + id_appointment +
-                ", id_patient=" + id_patient +
-                ", id_doctor=" + id_doctor +
+                ", objPatient=" + objPatient +
+                ", objDoctor=" + objDoctor +
                 ", date_appointment=" + date_appointment +
                 ", time_appointment=" + time_appointment +
                 ", motive='" + motive + '\'' +
