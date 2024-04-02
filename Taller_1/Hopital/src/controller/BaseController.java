@@ -44,6 +44,8 @@ public abstract class  BaseController {
         try {
             int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Write id to find: "));
 
+
+
             Object obj = modelBase.findById(id);
 
             if (obj == null) return;
@@ -86,8 +88,10 @@ public abstract class  BaseController {
 
         if(isSure == 0){
             //Actualizamos el objeto
-            this.modelBase.update(idObj, objUpdated);
-            JOptionPane.showMessageDialog(null, "Successfully updated");
+            Object obj = this.modelBase.update(idObj, objUpdated);
+            if(obj != null){
+                JOptionPane.showMessageDialog(null, "Successfully updated");
+            }
         }else {
             JOptionPane.showMessageDialog(null, "Update canceled");
         }
@@ -122,6 +126,7 @@ public abstract class  BaseController {
         try{
             List<Object> listObj = this.modelBase.findAll();
             String strListObj = this.getAll(listObj);
+
             idObj = Integer.parseInt(JOptionPane.showInputDialog(null, "Write the id:\n" + strListObj));
 
             //Validamos la información

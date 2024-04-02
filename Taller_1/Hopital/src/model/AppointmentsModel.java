@@ -22,10 +22,10 @@ public class AppointmentsModel extends BaseModel{
             //Obtenemos toda la info
             int id_appointment = objResult.getInt(1);
             int id_patient = objResult.getInt(2);
-            int id_doctor = objResult.getInt(4);
-            LocalDate date_appointment = objResult.getDate(5).toLocalDate() ;
-            LocalTime time_appointment = objResult.getTime(6).toLocalTime();
-            String motive = objResult.getString(7);
+            int id_doctor = objResult.getInt(3);
+            LocalDate date_appointment = objResult.getDate(4).toLocalDate() ;
+            LocalTime time_appointment = objResult.getTime(5).toLocalTime();
+            String motive = objResult.getString(6);
 
             //Buscamos por id al paciente y al doctor
             PatientModel objPatientModel = new PatientModel();
@@ -69,7 +69,7 @@ public class AppointmentsModel extends BaseModel{
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
-            String sql = "UPDATE specialities SET id_patient=? id_doctor=? date_appointment=? time_appointment=? motive=? WHERE id=?";
+            String sql = "UPDATE specialities SET id_patient=?, id_doctor=?, date_appointment=?, time_appointment=?, motive=? WHERE id=?";
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
             //Asignamos los valores que serán actualizados

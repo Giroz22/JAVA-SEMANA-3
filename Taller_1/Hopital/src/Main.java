@@ -22,13 +22,25 @@ public class Main {
                     """);
 
             //En base a la opción seleccionada el objController toma un valor u otro
-            objController = switch (opc) {
-                case "1" -> new SpecialityController();
-                case "2" -> new DoctorController();
-                case "3" -> new PatientController();
-                case "4" -> new AppointmentsController();
-                default -> null;
-            };
+            switch (opc){
+                case "1":
+                    objController = new SpecialityController();
+                    break;
+                case "2":
+                    objController = new DoctorController();
+                    break;
+                case "3":
+                    objController = new PatientController();
+                    break;
+                case "4":
+                    objController = new AppointmentsController();
+                    break;
+                case "5":
+                    continue;
+                default:
+                    JOptionPane.showMessageDialog(null, "Option invalid");
+                    continue;
+            }
 
             main.menuCrud(objController);
 

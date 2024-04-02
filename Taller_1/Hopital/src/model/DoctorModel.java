@@ -61,15 +61,15 @@ public class DoctorModel extends BaseModel{
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
-            String sql = "UPDATE doctors SET name=? surname=? id_speciality=? WHERE id=?";
+            String sql = "UPDATE doctors SET name=?, surname=?, id_speciality=? WHERE id=?";
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
             //Asignamos los valores que serán actualizados
             Doctor objDoctor  = (Doctor) obj;
             objPreparedStatement.setString(1, objDoctor.getName());
             objPreparedStatement.setString(2, objDoctor.getSurname());
-            objPreparedStatement.setInt(2, objDoctor.getObjSpeciality().getId_speciality());
-            objPreparedStatement.setInt(3, id);
+            objPreparedStatement.setInt(3, objDoctor.getObjSpeciality().getId_speciality());
+            objPreparedStatement.setInt(4, id);
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info update doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);

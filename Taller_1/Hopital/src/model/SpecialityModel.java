@@ -53,7 +53,7 @@ public class SpecialityModel extends BaseModel{
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
-            String sql = "UPDATE specialities SET name=? description=? WHERE id=?";
+            String sql = "UPDATE specialities SET name=?, description=? WHERE id=?";
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
             //Asignamos los valores que serán actualizados

@@ -124,6 +124,7 @@ public abstract class BaseModel implements Model {
             if(!ConfigDB.openConnection()) return null;
 
             PreparedStatement objPreparedStatement = this.setInfoUpdate(id, newObj);
+            if(objPreparedStatement == null) return null;
 
             // 5. Ejecutamos la consulta
             int rowsUpdate = objPreparedStatement.executeUpdate();
@@ -133,7 +134,7 @@ public abstract class BaseModel implements Model {
             }
 
         }catch (SQLException e){
-            System.err.println("Error to save in class BaseModel\n"+e.getMessage());
+            JOptionPane.showMessageDialog(null,"Error to save in class BaseModel\n"+e.getMessage());
         }
 
         ConfigDB.closeConnection();

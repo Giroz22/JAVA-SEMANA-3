@@ -57,7 +57,7 @@ public class PatientModel extends BaseModel{
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
-            String sql = "UPDATE patients SET name=? surname=? birthdate=? identification_document=? WHERE id=?";
+            String sql = "UPDATE patients SET name=?, surname=?, birthdate=?, identification_document=? WHERE id=?";
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
             //Asignamos los valores que serán actualizados

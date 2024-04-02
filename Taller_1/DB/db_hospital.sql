@@ -4,23 +4,23 @@ CREATE DATABASE IF NOT EXISTS db_hospital;
 USE db_hospital;
 
 CREATE TABLE specialities(
-	id_speciality INT PRIMARY KEY AUTO_INCREMENT,
+	id INT PRIMARY KEY AUTO_INCREMENT,
 	name VARCHAR(35),
 	description VARCHAR(200)
 );
 
 CREATE TABLE doctors(
-	id_doctor INT PRIMARY KEY AUTO_INCREMENT,
+	id INT PRIMARY KEY AUTO_INCREMENT,
 	name VARCHAR(35),
 	surname VARCHAR(35),
     id_speciality INT,
     #Relation
 	CONSTRAINT FK_DoctorEspeciality FOREIGN KEY (id_speciality) 
-    REFERENCES specialities(id_speciality)
+    REFERENCES specialities(id)
 );
 
 CREATE TABLE patients(
-	id_patient INT PRIMARY KEY AUTO_INCREMENT,
+	id INT PRIMARY KEY AUTO_INCREMENT,
 	name VARCHAR(35),
 	surname VARCHAR(35),
 	birthdate DATE,
@@ -28,16 +28,16 @@ CREATE TABLE patients(
 );
 
 CREATE TABLE appointments(
-	id_appointment INT PRIMARY KEY AUTO_INCREMENT,
+	id INT PRIMARY KEY AUTO_INCREMENT,
 	id_patient INT,
 	id_doctor INT,
 	date_appointment DATE,
 	time_appointment TIME,
 	motive VARCHAR(200),
     CONSTRAINT FK_appointmentPatient FOREIGN KEY (id_patient)
-    REFERENCES patients(id_patient),
+    REFERENCES patients(id),
     CONSTRAINT FK_appointmentDoctor FOREIGN KEY (id_doctor)
-    REFERENCES doctors(id_doctor)
+    REFERENCES doctors(id)
 );
 
 -- Insert sample data into the specialities table
@@ -92,3 +92,5 @@ INSERT INTO appointments (id_patient, id_doctor, date_appointment, time_appointm
 (9, 9, '2024-04-13', '13:30:00', 'Menstrual irregularities'),
 (10, 10, '2024-04-14', '16:15:00', 'Diabetes management');
 
+SELECT * FROM specialities WHERE id = 2;
+UPDATE doctors SET name="asdas", surname="asdasd", id_speciality="sdsdfsdf" WHERE id=?;
