@@ -48,7 +48,7 @@ public class DoctorModel extends BaseModel{
             Doctor objDoctor = (Doctor) obj;
             objPreparedStatement.setString(1,objDoctor.getName());
             objPreparedStatement.setString(2,objDoctor.getSurname());
-            objPreparedStatement.setInt(3,objDoctor.getObjSpeciality().getId_speciality());
+            objPreparedStatement.setInt(3,objDoctor.getObjSpeciality().getId());
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info save doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
@@ -57,7 +57,7 @@ public class DoctorModel extends BaseModel{
     }
 
     @Override
-    public PreparedStatement setInfoUpdate(int id, Object obj) {
+    public PreparedStatement setInfoUpdate(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
@@ -68,8 +68,8 @@ public class DoctorModel extends BaseModel{
             Doctor objDoctor  = (Doctor) obj;
             objPreparedStatement.setString(1, objDoctor.getName());
             objPreparedStatement.setString(2, objDoctor.getSurname());
-            objPreparedStatement.setInt(3, objDoctor.getObjSpeciality().getId_speciality());
-            objPreparedStatement.setInt(4, id);
+            objPreparedStatement.setInt(3, objDoctor.getObjSpeciality().getId());
+            objPreparedStatement.setInt(4, objDoctor.getId());
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info update doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);

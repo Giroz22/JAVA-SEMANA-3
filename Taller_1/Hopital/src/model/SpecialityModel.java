@@ -49,7 +49,7 @@ public class SpecialityModel extends BaseModel{
     }
 
     @Override
-    public PreparedStatement setInfoUpdate(int id, Object obj) {
+    public PreparedStatement setInfoUpdate(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
@@ -60,7 +60,7 @@ public class SpecialityModel extends BaseModel{
             Speciality objSpeciality  = (Speciality) obj;
             objPreparedStatement.setString(1, objSpeciality.getName());
             objPreparedStatement.setString(2, objSpeciality.getDescription());
-            objPreparedStatement.setInt(3, id);
+            objPreparedStatement.setInt(3, objSpeciality.getId());
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info update speciality: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);

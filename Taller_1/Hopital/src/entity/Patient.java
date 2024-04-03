@@ -25,11 +25,11 @@ public class Patient {
 
     //Methods
     //Setter and Getters
-    public int getId_patient() {
+    public int getId() {
         return id_patient;
     }
 
-    public void setId_patient(int id_patient) {
+    public void setId(int id_patient) {
         this.id_patient = id_patient;
     }
 
@@ -69,11 +69,10 @@ public class Patient {
     @Override
     public String toString() {
         return "Patient{" +
-                "id_patient=" + id_patient +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", birthdate=" + birthdate +
-                ", identification_document='" + identification_document + '\'' +
+                "\nName='" + name + '\'' +
+                "\nSurname='" + surname + '\'' +
+                "\nBirthdate=" + birthdate +
+                "\nIdentification document='" + identification_document + '\'' +
                 '}';
     }
 }

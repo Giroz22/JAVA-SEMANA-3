@@ -20,11 +20,11 @@ public class Doctor {
 
     //Methods
     //Setter and Getters
-    public int getId_doctor() {
+    public int getId() {
         return id_doctor;
     }
 
-    public void setId_doctor(int id_doctor) {
+    public void setId(int id_doctor) {
         this.id_doctor = id_doctor;
     }
 
@@ -55,11 +55,10 @@ public class Doctor {
     //ToString
     @Override
     public String toString() {
-        return "Appointments{" +
-                "id_doctor=" + id_doctor +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", objSpeciality=" + objSpeciality +
+        return "Doctor{" +
+                "Name='" + name + '\'' +
+                "Surname='" + surname + '\'' +
+                "ObjSpeciality=" + objSpeciality.getName() +
                 '}';
     }
 }

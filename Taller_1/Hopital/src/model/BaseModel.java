@@ -19,7 +19,7 @@ public abstract class BaseModel implements Model {
 
     public abstract Object getInfoObject(ResultSet objResult);
     public abstract PreparedStatement setInfoSave(Object obj);
-    public abstract PreparedStatement setInfoUpdate(int id, Object obj);
+    public abstract PreparedStatement setInfoUpdate(Object obj);
 
     @Override
     public List<Object> findAll() {
@@ -118,12 +118,12 @@ public abstract class BaseModel implements Model {
     }
 
     @Override
-    public Object update(int id, Object newObj) {
+    public Object update(Object newObj) {
         try{
             // 1. Abrimos la conexión
             if(!ConfigDB.openConnection()) return null;
 
-            PreparedStatement objPreparedStatement = this.setInfoUpdate(id, newObj);
+            PreparedStatement objPreparedStatement = this.setInfoUpdate(newObj);
             if(objPreparedStatement == null) return null;
 
             // 5. Ejecutamos la consulta

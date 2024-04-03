@@ -52,8 +52,8 @@ public class AppointmentsModel extends BaseModel{
 
             //Asignamos los valores que se van a enviar
             Appointment objAppointment = (Appointment) obj;
-            objPreparedStatement.setInt(1, objAppointment.getObjPatient().getId_patient());
-            objPreparedStatement.setInt(2, objAppointment.getObjDoctor().getId_doctor());
+            objPreparedStatement.setInt(1, objAppointment.getObjPatient().getId());
+            objPreparedStatement.setInt(2, objAppointment.getObjDoctor().getId());
             objPreparedStatement.setDate(3, Date.valueOf(objAppointment.getDate_appointment()));
             objPreparedStatement.setTime(4, Time.valueOf(objAppointment.getTime_appointment()));
             objPreparedStatement.setString(5, objAppointment.getMotive());
@@ -65,7 +65,7 @@ public class AppointmentsModel extends BaseModel{
     }
 
     @Override
-    public PreparedStatement setInfoUpdate(int id, Object obj) {
+    public PreparedStatement setInfoUpdate(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
@@ -74,12 +74,12 @@ public class AppointmentsModel extends BaseModel{
 
             //Asignamos los valores que serán actualizados
             Appointment objAppointment = (Appointment) obj;
-            objPreparedStatement.setInt(1, objAppointment.getObjPatient().getId_patient());
-            objPreparedStatement.setInt(2, objAppointment.getObjDoctor().getId_doctor());
+            objPreparedStatement.setInt(1, objAppointment.getObjPatient().getId());
+            objPreparedStatement.setInt(2, objAppointment.getObjDoctor().getId());
             objPreparedStatement.setDate(3, Date.valueOf(objAppointment.getDate_appointment()));
             objPreparedStatement.setTime(4, Time.valueOf(objAppointment.getTime_appointment()));
             objPreparedStatement.setString(5, objAppointment.getMotive());
-            objPreparedStatement.setInt(6, id);
+            objPreparedStatement.setInt(6, objAppointment.getId());
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info update Appointments: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);

@@ -17,11 +17,11 @@ public class Speciality {
     }
     //Methods
     //Setter and Getters
-    public int getId_speciality() {
+    public int getId() {
         return id_speciality;
     }
 
-    public void setId_speciality(int id_speciality) {
+    public void setId(int id_speciality) {
         this.id_speciality = id_speciality;
     }
 
@@ -45,9 +45,8 @@ public class Speciality {
     @Override
     public String toString() {
         return "Speciality{" +
-                "id_speciality=" + id_speciality +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
+                "\nName='" + name + '\'' +
+                "\nDescription='" + description + '\'' +
                 '}';
     }
 }

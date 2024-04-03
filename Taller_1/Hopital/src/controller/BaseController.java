@@ -4,6 +4,7 @@ import model.BaseModel;
 
 import javax.swing.*;
 import java.util.List;
+import java.lang.reflect.Method;
 
 public abstract class  BaseController {
     private BaseModel modelBase = null;
@@ -69,78 +70,86 @@ public abstract class  BaseController {
         JOptionPane.showMessageDialog(null, "Add successful\n" + objDB.toString());
     }
     public void update(){
+        try {
+            // Obtenemos la info tanto del objeto nuevo como del antiguo
+            Object objOld = selectObject();
+            if (objOld == null) return; // Validamos la info
 
-        //Obtenemos todos los objetos y los mostramos para que el usuario seleccione cuál actualizara
-        int idObj = selectIdObject();
-        if(idObj == -1) return; //Validamos si se obtuvo el id correctamente
+            // Obtenemos el método getId() del objeto
+            Method getIdMethod = objOld.getClass().getMethod("getId");
 
-        // Obtenemos la info tanto del objeto nuevo como del antiguo
-        Object objOld = this.modelBase.findById(idObj);
-        if (objOld == null) return; // Validamos la info
+            // Invocamos el método getId() en el objeto para obtener el ID
+            int idObj = (int) getIdMethod.invoke(objOld);
 
-        Object objUpdated = this.requestData(idObj);
-        if (objUpdated == null) return; // Validamos la info
+            Object objUpdated = this.requestData(idObj);
+            if (objUpdated == null) return; // Validamos la info
 
-        //Mostramos el mensaje de confirmación
-        int isSure = JOptionPane.showConfirmDialog(null, "Are you sure of update?\n"
-                + "Old:\n" + objOld.toString() + "\n"
-                + "New:\n" + objUpdated.toString());
+            //Mostramos el mensaje de confirmación
+            int isSure = JOptionPane.showConfirmDialog(null, "Are you sure of update?\n"
+                    + "Old:\n" + objOld.toString() + "\n"
+                    + "New:\n" + objUpdated.toString());
 
-        if(isSure == 0){
-            //Actualizamos el objeto
-            Object obj = this.modelBase.update(idObj, objUpdated);
-            if(obj != null){
-                JOptionPane.showMessageDialog(null, "Successfully updated");
+            if (isSure == 0) {
+                //Actualizamos el objeto
+                Object obj = this.modelBase.update(objUpdated);
+                if (obj != null) {
+                    JOptionPane.showMessageDialog(null, "Successfully updated");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Update canceled");
             }
-        }else {
-            JOptionPane.showMessageDialog(null, "Update canceled");
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Error update " + e.getMessage());
         }
-
     }
     public void delete(){
-        //Obtenemos todos los objetos y los mostramos para que el usuario seleccione cuál eliminará
-        int idObj = this.selectIdObject();
-        if(idObj == -1) return; //Validamos si se obtuvo el id correctamente
+        try {
+            //Obtenemos el objeto que se eliminara
+            Object obj = this.selectObject();
+            if (obj == null) return; //Validamos
 
-        Object obj = modelBase.findById(idObj);
-        if(obj == null) return; //Validamos
+            //Mostramos el mensaje de confirmación
+            int isSure = JOptionPane.showConfirmDialog(null, "Are you sure of delete?\n"
+                    + obj.toString());
 
-        //Mostramos el mensaje de confirmación
-        int isSure = JOptionPane.showConfirmDialog(null, "Are you sure of delete?\n"
-                + obj.toString());
+            if (isSure == 0) {
+                // Eliminamos el objeto
+                // Obtenemos el método getId() del objeto
+                Method getIdMethod = obj.getClass().getMethod("getId");
 
-        if(isSure == 0){
-            // Eliminamos el objeto
-            if (!this.modelBase.delete(idObj)) return; // Validamos si se eliminó el objeto
+                // Invocamos el método getId() en el objeto para obtener el ID
+                int idObj = (int) getIdMethod.invoke(obj);
+                if (!this.modelBase.delete(idObj)) return; // Validamos si se eliminó el objeto
 
-            JOptionPane.showMessageDialog(null, "Successfully deleted");
-        }else {
-            JOptionPane.showMessageDialog(null, "Update canceled");
+                JOptionPane.showMessageDialog(null, "Successfully deleted");
+            } else {
+                JOptionPane.showMessageDialog(null, "Update canceled");
+            }
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Error occurred while deleting" + e.getMessage() );
         }
     }
 
     //Obtenemos todos los objetos y los mostramos para que el usuario seleccione cuál eliminará
-    public int selectIdObject(){
-        int idObj = -1;
+    public Object selectObject(){
+        Object objSelected = null;
 
         try{
-            List<Object> listObj = this.modelBase.findAll();
-            String strListObj = this.getAll(listObj);
-
-            idObj = Integer.parseInt(JOptionPane.showInputDialog(null, "Write the id:\n" + strListObj));
-
-            //Validamos la información
-            if(modelBase.findById(idObj) == null) return idObj;
-
-        }catch (NumberFormatException e){
-            JOptionPane.showMessageDialog(null, "The id must be an integer");
-
-        }
-        catch (Exception e){
+            Object[] listObj = this.modelBase.findAll().toArray();
+            objSelected = (JOptionPane.showInputDialog(
+                    null,
+                    "Select an option:",
+                    "Options",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    listObj,
+                    listObj[0]
+            ));
+        }catch (Exception e){
             JOptionPane.showMessageDialog(null, "Error select an object");
         }
 
-        return idObj;
+        return objSelected;
     }
 
 }

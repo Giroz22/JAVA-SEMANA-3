@@ -27,11 +27,11 @@ public class Appointment {
 
     //Methods
     //Setter and Getters
-    public int getId_appointment() {
+    public int getId() {
         return id_appointment;
     }
 
-    public void setId_appointment(int id_appointment) {
+    public void setId(int id_appointment) {
         this.id_appointment = id_appointment;
     }
 
@@ -79,12 +79,11 @@ public class Appointment {
     @Override
     public String toString() {
         return "Appointments{" +
-                "id_appointment=" + id_appointment +
-                ", objPatient=" + objPatient +
-                ", objDoctor=" + objDoctor +
-                ", date_appointment=" + date_appointment +
-                ", time_appointment=" + time_appointment +
-                ", motive='" + motive + '\'' +
+                "\nPatient=" + objPatient.getName() + objPatient.getSurname() +
+                "\nDoctor=" + objDoctor.getName() + objDoctor.getSurname() +
+                "\nDate=" + date_appointment +
+                "\nTime" + time_appointment +
+                "\nMotive='" + motive + '\'' +
                 '}';
     }
 }

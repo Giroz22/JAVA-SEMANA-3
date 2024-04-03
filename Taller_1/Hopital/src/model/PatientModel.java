@@ -40,7 +40,7 @@ public class PatientModel extends BaseModel{
 
             //Asignamos los valores que se van a enviar
             Patient objPatient = (Patient) obj;
-            objPreparedStatement.setInt(1,objPatient.getId_patient());
+            objPreparedStatement.setInt(1,objPatient.getId());
             objPreparedStatement.setString(2,objPatient.getName());
             objPreparedStatement.setString(3,objPatient.getSurname());
             objPreparedStatement.setDate(4, Date.valueOf(objPatient.getBirthdate()));
@@ -53,7 +53,7 @@ public class PatientModel extends BaseModel{
     }
 
     @Override
-    public PreparedStatement setInfoUpdate(int id, Object obj) {
+    public PreparedStatement setInfoUpdate(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try{
             //Preparamos el PreparedStatement
@@ -66,7 +66,7 @@ public class PatientModel extends BaseModel{
             objPreparedStatement.setString(2, objPatient.getSurname());
             objPreparedStatement.setDate(3, Date.valueOf(objPatient.getBirthdate()));
             objPreparedStatement.setString(4, objPatient.getIdentification_document());
-            objPreparedStatement.setInt(5, id);
+            objPreparedStatement.setInt(5, objPatient.getId());
 
         }catch (SQLException e){
             JOptionPane.showMessageDialog(null,"Error set info update patient: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
