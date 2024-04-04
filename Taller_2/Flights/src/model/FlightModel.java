@@ -6,17 +6,7 @@ import java.util.List;
 
 public class FlightModel extends BaseModel{
     public FlightModel() {
-        super(new Flight());
-    }
-
-    @Override
-    public List<Object> findAll() {
-        return null;
-    }
-
-    @Override
-    public Object findById(int id) {
-        return null;
+        super(Flight.class);
     }
 
     @Override

@@ -5,54 +5,25 @@ import entity.BaseEntity;
 
 import javax.swing.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseModel implements CRUD {
 
     private String nameTable;
-    private Object entity;
+    private Class<?> entity;
 
-    public BaseModel(Object entity)  {
+    public BaseModel(Class<?> entity)  {
         //Se obtiene el nombre de la clase que extiende de BaseModel
-        nameTable = this.getClass().getSimpleName();
+        nameTable = entity.getSimpleName();
         this.entity = entity;
-
-        test();
     }
 
-    public void test(ResultSet objResult){
-        //Field[] listAtributes = this.getClass().toString();
-        try {
-            Field[] listAttributes = entity.getClass().getDeclaredFields();
-            for (int i = 0; i<listAttributes.length; i++){
-                //Obtenemos el nombre del atributo
-                Field attribute = listAttributes[i];
-                String nameAttribute = attribute.getName();
-                String nameMethodSet = "set" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
-                String nameTypeAttribute = attribute.getType().getSimpleName();
-
-                //Obtenemos el método set del atributo para enviar la información
-                Method methodSet = this.entity.getClass().getDeclaredMethod(nameMethodSet, attribute.getType());//Ponemos la primera letra mayúscula
-                objResult.getObject(i, attribute.getType()); //Continuar
-                System.out.println();
-
-
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error al Crear la clase\n" + e);
-        }
-
-
-    }
-     /*
     @Override
     public List<Object> findAll() {
         // 1. Inicializamos la lista
@@ -73,22 +44,21 @@ public abstract class BaseModel implements CRUD {
 
             //6. Obtenemos la info
             while (objResult.next()){
-
-
                 Object objDB = getInfoObject(objResult);
+                if (objDB == null) return listObj;
 
                 // 8. Agregamos el objeto a la lista
                 listObj.add(objDB);
             }
 
         }catch (SQLException e){
-            JOptionPane.showMessageDialog(null, "Error find all data");
+            JOptionPane.showMessageDialog(null, "Error find all data" + e.getMessage() );
         }
 
         ConfigDB.closeConnection();
         return listObj;
-    }   */
-    /*
+    }
+
     @Override
     public Object findById(int id) {
         Object objDB = null;
@@ -149,7 +119,7 @@ public abstract class BaseModel implements CRUD {
         ConfigDB.closeConnection();
         return objDB;
     }
-
+/*
     @Override
     public Object update(Object newObj) {
         try{
@@ -205,4 +175,89 @@ public abstract class BaseModel implements CRUD {
         ConfigDB.closeConnection();
         return isDeleted;
     }*/
+
+
+    public Object getInfoObject(ResultSet objResult){
+        Object obj = "";
+        //Field[] listAtributes = this.getClass().toString();
+        try {
+            obj = entity.getDeclaredConstructor().newInstance();
+            Field[] listAttributes = entity.getDeclaredFields();
+            for (int i = 0; i<listAttributes.length; i++){
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+                String nameAttribute = attribute.getName();
+                String nameMethodSet = "set" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
+
+                //Obtenemos el valor de la DB
+                Object attributeDB = objResult.getObject(i+1);
+
+                //Obtenemos el método set del atributo para enviar la información
+                Method methodSet = this.entity.getDeclaredMethod(nameMethodSet, attribute.getType());
+
+                //Asignamos el valor obtenido de la DB
+                Object resultMethod = methodSet.invoke(obj, attributeDB);
+            }
+        } catch (Exception e) {
+            System.out.println("Error al Crear la clase\n" + e);
+        }
+
+        return obj;
+    }
+    public PreparedStatement setInfoSave(Object obj) {
+        PreparedStatement objPreparedStatement = null;
+        try {
+            //Buscamos todos los atributos
+            Field[] listAttributes = entity.getDeclaredFields();
+            String listNameAttributes = "";
+            //Recorremos la lista de atributos y obtenemos la lista de atributos
+            for (int i = 0; i<listAttributes.length; i++) {
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+                listNameAttributes += attribute.getName() + ",";
+            }
+
+            //Preparamos el PreparedStatement
+            String sql = "INSERT INTO doctors (" + listNameAttributes + ") VALUES (?,?,?);";
+            objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            //Recorremos la lista de atributos
+            for (int i = 0; i<listAttributes.length; i++) {
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+                String nameAttribute = attribute.getName();
+                String nameMethodSet = "get" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
+
+                //Obtenemos el método get del atributo para enviar la información
+                Method methodGet = this.entity.getDeclaredMethod(nameMethodSet);
+                objPreparedStatement.setObject(i+1,methodGet.invoke(obj));
+            }
+
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null,"Error set info save: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+        }
+        return objPreparedStatement;
+    }
+/*
+    @Override
+    public PreparedStatement setInfoUpdate(Object obj) {
+        PreparedStatement objPreparedStatement = null;
+        try{
+            //Preparamos el PreparedStatement
+            String sql = "UPDATE doctors SET name=?, surname=?, id_speciality=? WHERE id=?";
+            objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
+
+            //Asignamos los valores que serán actualizados
+            Doctor objDoctor  = (Doctor) obj;
+            objPreparedStatement.setString(1, objDoctor.getName());
+            objPreparedStatement.setString(2, objDoctor.getSurname());
+            objPreparedStatement.setInt(3, objDoctor.getObjSpeciality().getId());
+            objPreparedStatement.setInt(4, objDoctor.getId());
+
+        }catch (SQLException e){
+            JOptionPane.showMessageDialog(null,"Error set info update doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+        }
+        return objPreparedStatement;
+    }
+ */
 }

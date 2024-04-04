@@ -1,24 +1,24 @@
 package entity;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.sql.Time;
+import java.sql.Date;
 
 public class Flight {
     private int id;
     private String destino;
-    private LocalDate departure_date;
-    private LocalTime departure_time;
-    private Plane plane;
+    private Date departure_date;
+    private Time departure_time;
+    private int id_plane;
 
     public Flight() {
     }
 
-    public Flight(int id, String destino, LocalDate departure_date, LocalTime departure_time, Plane plane) {
+    public Flight(int id, String destino, Date departure_date, Time departure_time, int id_plane) {
         this.id = id;
         this.destino = destino;
         this.departure_date = departure_date;
         this.departure_time = departure_time;
-        this.plane = plane;
+        this.id_plane = id_plane;
     }
 
     public int getId() {
@@ -37,28 +37,28 @@ public class Flight {
         this.destino = destino;
     }
 
-    public LocalDate getDeparture_date() {
+    public Date getDeparture_date() {
         return departure_date;
     }
 
-    public void setDeparture_date(LocalDate departure_date) {
+    public void setDeparture_date(Date departure_date) {
         this.departure_date = departure_date;
     }
 
-    public LocalTime getDeparture_time() {
+    public Time getDeparture_time() {
         return departure_time;
     }
 
-    public void setDeparture_time(LocalTime departure_time) {
+    public void setDeparture_time(Time departure_time) {
         this.departure_time = departure_time;
     }
 
-    public Plane getPlane() {
-        return plane;
+    public int getId_plane() {
+        return id_plane;
     }
 
-    public void setPlane(Plane plane) {
-        this.plane = plane;
+    public void setId_plane(int id_plane) {
+        this.id_plane = id_plane;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class Flight {
                 ", destino='" + destino + '\'' +
                 ", departure_date=" + departure_date +
                 ", departure_time=" + departure_time +
-                ", plane=" + plane +
+                ", id_plane=" + id_plane +
                 '}';
     }
 }
