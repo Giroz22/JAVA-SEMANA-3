@@ -1,8 +1,9 @@
 package controller;
 
 import entity.Flight;
-import model.BaseModel;
+import entity.Plane;
 import model.FlightModel;
+import model.PlaneModel;
 
 import javax.swing.*;
 import java.sql.Date;
@@ -15,6 +16,9 @@ public class FlightController extends BaseController{
 
     @Override
     public Object requestData(int id) {
+        PlaneModel planeModel = new PlaneModel();
+        Object[] listPlanes = planeModel.findAll().toArray();
+
         return new Flight(
                 id,
                 JOptionPane.showInputDialog(null, "Writes the destiny"),
@@ -24,18 +28,19 @@ public class FlightController extends BaseController{
                         JOptionPane.showInputDialog(null, "Enter the day of flight")
                 ),
                 Time.valueOf(
-                        JOptionPane.showInputDialog(null, "Enter the year of flight") + ":" +
-                        JOptionPane.showInputDialog(null, "Enter the month of flight") + ":" +
+                        JOptionPane.showInputDialog(null, "Enter the hour of flight") + ":" +
+                        JOptionPane.showInputDialog(null, "Enter the minutes of flight") + ":" +
                         "00"
                 ),
-                (JOptionPane.showInputDialog(
+                ((Plane)(JOptionPane.showInputDialog(
                         null,
                         "Select the Speciality of the doctor:",
                         "Specialities",
                         JOptionPane.QUESTION_MESSAGE,
                         null,
-                        listSpecialities,
-                        listSpecialities[0]//Terminar...
-                ))
+                        listPlanes,
+                        listPlanes[0]//Terminar...
+                ))).getId()
+        );
     }
 }

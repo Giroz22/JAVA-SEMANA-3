@@ -9,18 +9,4 @@ public class FlightModel extends BaseModel{
         super(Flight.class);
     }
 
-    @Override
-    public Object save(Object obj) {
-        return null;
-    }
-
-    @Override
-    public Object update(Object obj) {
-        return null;
-    }
-
-    @Override
-    public boolean delete(int id) {
-        return false;
-    }
 }

@@ -119,7 +119,7 @@ public abstract class BaseModel implements CRUD {
         ConfigDB.closeConnection();
         return objDB;
     }
-/*
+
     @Override
     public Object update(Object newObj) {
         try{
@@ -174,29 +174,31 @@ public abstract class BaseModel implements CRUD {
 
         ConfigDB.closeConnection();
         return isDeleted;
-    }*/
+    }
 
 
     public Object getInfoObject(ResultSet objResult){
         Object obj = "";
-        //Field[] listAtributes = this.getClass().toString();
         try {
+            //Instanciamos el objeto
             obj = entity.getDeclaredConstructor().newInstance();
+
+            //Obtenemos los atributos del objeto
             Field[] listAttributes = entity.getDeclaredFields();
+
+            //Recorremos la lista de atributos
             for (int i = 0; i<listAttributes.length; i++){
-                //Obtenemos el nombre del atributo
+                //Obtenemos el atributo
                 Field attribute = listAttributes[i];
-                String nameAttribute = attribute.getName();
-                String nameMethodSet = "set" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
 
-                //Obtenemos el valor de la DB
-                Object attributeDB = objResult.getObject(i+1);
+                //Creamos el método set del objeto
+                Method methodSet = this.entity.getDeclaredMethod(getNameMethodSet(attribute), attribute.getType());
 
-                //Obtenemos el método set del atributo para enviar la información
-                Method methodSet = this.entity.getDeclaredMethod(nameMethodSet, attribute.getType());
+                //Obtenemos el valor del atributo desde la DB
+                Object valueAttribute = objResult.getObject(i+1);
 
-                //Asignamos el valor obtenido de la DB
-                Object resultMethod = methodSet.invoke(obj, attributeDB);
+                //Asignamos un valor al atributo
+                methodSet.invoke(obj, valueAttribute);
             }
         } catch (Exception e) {
             System.out.println("Error al Crear la clase\n" + e);
@@ -204,33 +206,28 @@ public abstract class BaseModel implements CRUD {
 
         return obj;
     }
+
     public PreparedStatement setInfoSave(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try {
             //Buscamos todos los atributos
             Field[] listAttributes = entity.getDeclaredFields();
-            String listNameAttributes = "";
-            //Recorremos la lista de atributos y obtenemos la lista de atributos
-            for (int i = 0; i<listAttributes.length; i++) {
-                //Obtenemos el nombre del atributo
-                Field attribute = listAttributes[i];
-                listNameAttributes += attribute.getName() + ",";
-            }
 
             //Preparamos el PreparedStatement
-            String sql = "INSERT INTO doctors (" + listNameAttributes + ") VALUES (?,?,?);";
+            String sql = generateQueryInsert(listAttributes);
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             //Recorremos la lista de atributos
-            for (int i = 0; i<listAttributes.length; i++) {
+            for (int i = 1; i<listAttributes.length; i++) {
                 //Obtenemos el nombre del atributo
                 Field attribute = listAttributes[i];
-                String nameAttribute = attribute.getName();
-                String nameMethodSet = "get" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
 
-                //Obtenemos el método get del atributo para enviar la información
+                //Obtenemos el nombre del método get
+                String nameMethodSet = getNameMethodGet(attribute);
+
+                //Obtenemos el método set del atributo y enviamos la información
                 Method methodGet = this.entity.getDeclaredMethod(nameMethodSet);
-                objPreparedStatement.setObject(i+1,methodGet.invoke(obj));
+                objPreparedStatement.setObject(i,methodGet.invoke(obj));
             }
 
         }catch (Exception e){
@@ -238,26 +235,82 @@ public abstract class BaseModel implements CRUD {
         }
         return objPreparedStatement;
     }
-/*
-    @Override
+
     public PreparedStatement setInfoUpdate(Object obj) {
         PreparedStatement objPreparedStatement = null;
         try{
+            //Buscamos todos los atributos
+            Field[] listAttributes = entity.getDeclaredFields();
+
             //Preparamos el PreparedStatement
-            String sql = "UPDATE doctors SET name=?, surname=?, id_speciality=? WHERE id=?";
+            String sql = generateQueryUpdate(listAttributes);
             objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
-            //Asignamos los valores que serán actualizados
-            Doctor objDoctor  = (Doctor) obj;
-            objPreparedStatement.setString(1, objDoctor.getName());
-            objPreparedStatement.setString(2, objDoctor.getSurname());
-            objPreparedStatement.setInt(3, objDoctor.getObjSpeciality().getId());
-            objPreparedStatement.setInt(4, objDoctor.getId());
+            //Recorremos cada uno de los atributos
+            for (int i = 0; i<listAttributes.length; i++) {
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+                String nameMethodGet = getNameMethodGet(attribute);
 
-        }catch (SQLException e){
+                //Obtenemos el método get del atributo para enviar la información
+                Method methodGet = this.entity.getDeclaredMethod(nameMethodGet);
+
+                //Si el atributo es el id se asigna en el query al final
+                if(attribute.getName().equals("id")){
+                    objPreparedStatement.setObject(listAttributes.length, methodGet.invoke(obj));
+                    continue;
+                }
+
+                objPreparedStatement.setObject(i, methodGet.invoke(obj));
+            }
+
+        }catch (Exception e){
             JOptionPane.showMessageDialog(null,"Error set info update doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
         }
         return objPreparedStatement;
     }
- */
+
+    private String getNameMethodGet(Field attribute){
+        String nameAttribute = attribute.getName();
+        return "get" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
+    }
+    private String getNameMethodSet(Field attribute){
+        String nameAttribute = attribute.getName();
+        return "set" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
+    }
+    private String generateQueryUpdate(Field[] listAttributes){
+        String strNamesAttributes = "";
+
+        for (int i = 1; i<listAttributes.length; i++) {
+            //Obtenemos el atributo
+            Field attribute = listAttributes[i];
+            if(i<listAttributes.length-1) {
+                strNamesAttributes += attribute.getName() + "=?, ";
+            } else {
+                strNamesAttributes += attribute.getName() + "=?";
+            }
+        }
+
+        return "UPDATE "+ this.nameTable +" SET "+ strNamesAttributes +" WHERE id=?";
+    }
+
+    private String generateQueryInsert(Field[] listAttributes){
+        String listNameAttributes = "";
+        String numValues = "";
+
+        //Recorremos la lista de atributos y obtenemos la lista de atributos
+        for (int i = 1; i<listAttributes.length; i++) {
+            //Obtenemos el nombre del atributo
+            Field attribute = listAttributes[i];
+            if(i<listAttributes.length-1) {
+                listNameAttributes += attribute.getName() + ", ";
+                numValues += "?,";
+            } else {
+                listNameAttributes += attribute.getName();
+                numValues += "?";
+            }
+        }
+        //Preparamos el PreparedStatement
+        return "INSERT INTO " + this.nameTable + " (" + listNameAttributes + ") VALUES ( " + numValues + " );";
+    }
 }
