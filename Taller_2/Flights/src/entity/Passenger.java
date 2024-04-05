@@ -51,7 +51,7 @@ public class Passenger {
     @Override
     public String toString() {
         return "Passenger{" +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", surname='" + surname + '\'' +
                 ", identity_card='" + identity_card + '\'' +
                 '}';

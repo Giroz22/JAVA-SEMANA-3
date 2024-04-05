@@ -39,7 +39,7 @@ public class Plane {
     @Override
     public String toString() {
         return "Plane{" +
-                ", model='" + model + '\'' +
+                "model='" + model + '\'' +
                 ", capacity=" + capacity +
                 '}';
     }

@@ -32,7 +32,7 @@ create table Reservation(
     id_flight INT,
 	date_reservation DATE,
     seat VARCHAR(5),
-	CONSTRAINT fk_reservation_passanger FOREIGN KEY (id_passenger)
+	CONSTRAINT fk_reservation_passanger FOREIGN KEY (id_passenger) ON DELETE CASCADE
     REFERENCES Passenger(id),
     CONSTRAINT fk_reservation_flight FOREIGN KEY(id_flight)
     REFERENCES Flight(id)

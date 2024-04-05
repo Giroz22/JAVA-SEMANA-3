@@ -40,7 +40,6 @@ public abstract class  BaseController {
 
         return strListObj;
     }
-
     public void getById(){
         try {
             int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Write id to find: "));
@@ -56,7 +55,6 @@ public abstract class  BaseController {
             JOptionPane.showMessageDialog(null, "Error getId");
         }
     }
-
     public void create(){
         Object objSave = this.requestData(0);
         if(objSave == null) return;
@@ -127,7 +125,6 @@ public abstract class  BaseController {
             JOptionPane.showMessageDialog(null, "Error occurred while deleting" + e.getMessage() );
         }
     }
-
     //Obtenemos todos los objetos y los mostramos para que el usuario seleccione cuál eliminará
     public Object selectObject(){
         Object objSelected = null;

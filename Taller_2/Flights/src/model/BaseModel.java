@@ -1,7 +1,6 @@
 package model;
 
 import config.ConfigDB;
-import entity.BaseEntity;
 
 import javax.swing.*;
 import java.lang.reflect.Field;
@@ -15,13 +14,14 @@ import java.util.List;
 
 public abstract class BaseModel implements CRUD {
 
-    private String nameTable;
-    private Class<?> entity;
+    private final String nameTable;
+    private final Class<?> entity;
 
     public BaseModel(Class<?> entity)  {
+        this.entity = entity;
+
         //Se obtiene el nombre de la clase que extiende de BaseModel
         nameTable = entity.getSimpleName();
-        this.entity = entity;
     }
 
     @Override
@@ -45,7 +45,7 @@ public abstract class BaseModel implements CRUD {
             //6. Obtenemos la info
             while (objResult.next()){
                 Object objDB = getInfoObject(objResult);
-                if (objDB == null) return listObj;
+                if (objDB == null) break;
 
                 // 8. Agregamos el objeto a la lista
                 listObj.add(objDB);
@@ -58,7 +58,6 @@ public abstract class BaseModel implements CRUD {
         ConfigDB.closeConnection();
         return listObj;
     }
-
     @Override
     public Object findById(int id) {
         Object objDB = null;
@@ -93,57 +92,90 @@ public abstract class BaseModel implements CRUD {
         ConfigDB.closeConnection();
         return objDB;
     }
-
     @Override
-    public Object save(Object obj) {
+    public Object save(Object objSave) {
         Object objDB = null;
 
         try{
-            // 1. Abrimos la conexión
+            // Abrimos la conexión
             if(!ConfigDB.openConnection()) return null;
 
-            PreparedStatement objPreparedStatement = this.setInfoSave(obj);
+            //Buscamos todos los atributos
+            Field[] listAttributes = entity.getDeclaredFields();
 
-            // 5. Ejecutamos la consulta
+            //Preparamos el PreparedStatement
+            String sql = generateQueryInsert(listAttributes);
+            PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            //Recorremos la lista de atributos
+            for (int i = 1; i<listAttributes.length; i++) {
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+
+                //Obtenemos el nombre del método get
+                String nameMethodSet = getNameMethodGet(attribute);
+
+                //Obtenemos el método set del atributo y enviamos la información
+                Method methodGet = this.entity.getDeclaredMethod(nameMethodSet);
+                objPreparedStatement.setObject(i,methodGet.invoke(objSave));
+            }
+
+            // Ejecutamos la consulta
             objPreparedStatement.execute();
             ResultSet objResult = objPreparedStatement.getGeneratedKeys();
+
             if(!objResult.next()) throw new SQLException("It wasn't posible to save");
 
-            // 6. Obtenemos el objeto guardado en la BD
+            // Obtenemos el objeto guardado en la BD
             objDB = this.findById(objResult.getInt(1));
 
-        }catch (SQLException e){
+        }catch (Exception e){
             System.err.println("Error to save class BaseModel\n"+e.getMessage());
         }
 
         ConfigDB.closeConnection();
         return objDB;
     }
-
     @Override
     public Object update(Object newObj) {
         try{
-            // 1. Abrimos la conexión
+            // Abrimos la conexión
             if(!ConfigDB.openConnection()) return null;
 
-            PreparedStatement objPreparedStatement = this.setInfoUpdate(newObj);
-            if(objPreparedStatement == null) return null;
+            //Buscamos todos los atributos
+            Field[] listAttributes = entity.getDeclaredFields();
 
-            // 5. Ejecutamos la consulta
-            int rowsUpdate = objPreparedStatement.executeUpdate();
+            //Preparamos el PreparedStatement
+            String sql = generateQueryUpdate(listAttributes);
+            PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
-            if(rowsUpdate <= 0){
-                JOptionPane.showMessageDialog(null,"It wasn't posible to save");
+            //Recorremos cada uno de los atributos
+            for (int i = 0; i<listAttributes.length; i++) {
+                //Obtenemos el nombre del atributo
+                Field attribute = listAttributes[i];
+                String nameMethodGet = getNameMethodGet(attribute);
+
+                //Obtenemos el método get del atributo para enviar la información
+                Method methodGet = this.entity.getDeclaredMethod(nameMethodGet);
+
+                //Si el atributo es el id se asigna en el query al final
+                if(attribute.getName().equals("id")){
+                    objPreparedStatement.setObject(listAttributes.length, methodGet.invoke(newObj));
+                    continue;
+                }
+
+                objPreparedStatement.setObject(i, methodGet.invoke(newObj));
             }
 
-        }catch (SQLException e){
+            objPreparedStatement.executeUpdate();
+
+        }catch (Exception e){
             JOptionPane.showMessageDialog(null,"Error to save in class BaseModel\n"+e.getMessage());
         }
 
         ConfigDB.closeConnection();
         return newObj;
     }
-
     @Override
     public boolean delete(int id) {
         boolean isDeleted = false;
@@ -176,9 +208,8 @@ public abstract class BaseModel implements CRUD {
         return isDeleted;
     }
 
-
     public Object getInfoObject(ResultSet objResult){
-        Object obj = "";
+        Object obj = null;
         try {
             //Instanciamos el objeto
             obj = entity.getDeclaredConstructor().newInstance();
@@ -187,89 +218,29 @@ public abstract class BaseModel implements CRUD {
             Field[] listAttributes = entity.getDeclaredFields();
 
             //Recorremos la lista de atributos
-            for (int i = 0; i<listAttributes.length; i++){
+            for (int i = 0; i < listAttributes.length; i++) {
                 //Obtenemos el atributo
                 Field attribute = listAttributes[i];
 
                 //Creamos el método set del objeto
-                Method methodSet = this.entity.getDeclaredMethod(getNameMethodSet(attribute), attribute.getType());
+                String nameMethodSet = getNameMethodSet(attribute);
+                Class<?> typeAttribute = attribute.getType();
+                Method methodSet = this.entity.getDeclaredMethod(nameMethodSet, typeAttribute);
 
                 //Obtenemos el valor del atributo desde la DB
-                Object valueAttribute = objResult.getObject(i+1);
+                Object valueAttribute = objResult.getObject(i + 1);
 
                 //Asignamos un valor al atributo
                 methodSet.invoke(obj, valueAttribute);
             }
+        }catch (NoSuchMethodException e){
+                System.out.println("No se encontro el metodo\n" + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Error al Crear la clase\n" + e);
+            System.out.println("Error al obtener la info\n" + e);
         }
 
         return obj;
     }
-
-    public PreparedStatement setInfoSave(Object obj) {
-        PreparedStatement objPreparedStatement = null;
-        try {
-            //Buscamos todos los atributos
-            Field[] listAttributes = entity.getDeclaredFields();
-
-            //Preparamos el PreparedStatement
-            String sql = generateQueryInsert(listAttributes);
-            objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-            //Recorremos la lista de atributos
-            for (int i = 1; i<listAttributes.length; i++) {
-                //Obtenemos el nombre del atributo
-                Field attribute = listAttributes[i];
-
-                //Obtenemos el nombre del método get
-                String nameMethodSet = getNameMethodGet(attribute);
-
-                //Obtenemos el método set del atributo y enviamos la información
-                Method methodGet = this.entity.getDeclaredMethod(nameMethodSet);
-                objPreparedStatement.setObject(i,methodGet.invoke(obj));
-            }
-
-        }catch (Exception e){
-            JOptionPane.showMessageDialog(null,"Error set info save: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
-        }
-        return objPreparedStatement;
-    }
-
-    public PreparedStatement setInfoUpdate(Object obj) {
-        PreparedStatement objPreparedStatement = null;
-        try{
-            //Buscamos todos los atributos
-            Field[] listAttributes = entity.getDeclaredFields();
-
-            //Preparamos el PreparedStatement
-            String sql = generateQueryUpdate(listAttributes);
-            objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
-
-            //Recorremos cada uno de los atributos
-            for (int i = 0; i<listAttributes.length; i++) {
-                //Obtenemos el nombre del atributo
-                Field attribute = listAttributes[i];
-                String nameMethodGet = getNameMethodGet(attribute);
-
-                //Obtenemos el método get del atributo para enviar la información
-                Method methodGet = this.entity.getDeclaredMethod(nameMethodGet);
-
-                //Si el atributo es el id se asigna en el query al final
-                if(attribute.getName().equals("id")){
-                    objPreparedStatement.setObject(listAttributes.length, methodGet.invoke(obj));
-                    continue;
-                }
-
-                objPreparedStatement.setObject(i, methodGet.invoke(obj));
-            }
-
-        }catch (Exception e){
-            JOptionPane.showMessageDialog(null,"Error set info update doctor: " + e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
-        }
-        return objPreparedStatement;
-    }
-
     private String getNameMethodGet(Field attribute){
         String nameAttribute = attribute.getName();
         return "get" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
@@ -278,22 +249,6 @@ public abstract class BaseModel implements CRUD {
         String nameAttribute = attribute.getName();
         return "set" + nameAttribute.substring(0,1).toUpperCase() + nameAttribute.substring(1);
     }
-    private String generateQueryUpdate(Field[] listAttributes){
-        String strNamesAttributes = "";
-
-        for (int i = 1; i<listAttributes.length; i++) {
-            //Obtenemos el atributo
-            Field attribute = listAttributes[i];
-            if(i<listAttributes.length-1) {
-                strNamesAttributes += attribute.getName() + "=?, ";
-            } else {
-                strNamesAttributes += attribute.getName() + "=?";
-            }
-        }
-
-        return "UPDATE "+ this.nameTable +" SET "+ strNamesAttributes +" WHERE id=?";
-    }
-
     private String generateQueryInsert(Field[] listAttributes){
         String listNameAttributes = "";
         String numValues = "";
@@ -313,4 +268,20 @@ public abstract class BaseModel implements CRUD {
         //Preparamos el PreparedStatement
         return "INSERT INTO " + this.nameTable + " (" + listNameAttributes + ") VALUES ( " + numValues + " );";
     }
+    private String generateQueryUpdate(Field[] listAttributes){
+        String strNamesAttributes = "";
+
+        for (int i = 1; i<listAttributes.length; i++) {
+            //Obtenemos el atributo
+            Field attribute = listAttributes[i];
+            if(i<listAttributes.length-1) {
+                strNamesAttributes += attribute.getName() + "=?, ";
+            } else {
+                strNamesAttributes += attribute.getName() + "=?";
+            }
+        }
+
+        return "UPDATE "+ this.nameTable +" SET "+ strNamesAttributes +" WHERE id=?";
+    }
+
 }

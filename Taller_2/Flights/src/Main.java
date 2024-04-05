@@ -1,5 +1,4 @@
-import controller.BaseController;
-import controller.FlightController;
+import controller.*;
 import model.FlightModel;
 
 import javax.swing.*;
@@ -16,7 +15,10 @@ public class Main {
 
             opc = JOptionPane.showInputDialog(null, """
                     Select a option:
-                    1. Flight               
+                    1. Flight 
+                    2. Reservation 
+                    3. Plane 
+                    4. Passenger            
                     5. Salir
                     """);
 
@@ -24,6 +26,15 @@ public class Main {
             switch (opc){
                 case "1":
                     objController = new FlightController();
+                    break;
+                case "2":
+                    objController = new ReservationController();
+                    break;
+                case "3":
+                    objController = new PlaneController();
+                    break;
+                case "4":
+                    objController = new PassengerController();
                     break;
                 case "5":
                     continue;
