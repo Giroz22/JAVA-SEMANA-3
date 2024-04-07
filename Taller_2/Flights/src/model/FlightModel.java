@@ -2,9 +2,8 @@ package model;
 
 import entity.Flight;
 
-public class FlightModel extends BaseModel {
+public class FlightModel extends BaseModel<Flight> {
     public FlightModel() {
-        super(Flight.class);
+        super(new Flight());
     }
-
 }

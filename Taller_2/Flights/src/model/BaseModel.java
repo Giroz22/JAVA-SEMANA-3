@@ -12,42 +12,40 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseModel implements CRUD {
+public abstract class BaseModel<T extends Object> implements CRUD<T> {
 
     private final String nameTable;
-    private final Class<?> entity;
+    private Class entityClass;
 
-    public BaseModel(Class<?> entity)  {
-        this.entity = entity;
-
-        //Se obtiene el nombre de la clase que extiende de BaseModel
-        nameTable = entity.getSimpleName();
+    public BaseModel(T entity)  {
+        this.entityClass = entity.getClass();
+        this.nameTable = this.entityClass.getSimpleName();
     }
 
     @Override
-    public List<Object> findAll() {
-        // 1. Inicializamos la lista
-        List<Object> listObj = new ArrayList<>();
+    public List<T> findAll() {
+        // Inicializamos la lista
+        List<T> listObj = new ArrayList<>();
 
-        //  2. Abrimos la conexión
+        // Abrimos la conexión
         if(!ConfigDB.openConnection()) return listObj;
 
-        // 3. Creamos la consulta
+        // Creamos la consulta
         String sql = "SELECT * FROM " + this.nameTable;
 
         try{
-            // 4.Preparamos el PreparedStatement
+            // Preparamos el PreparedStatement
             PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
-            // 5. Ejecutamos la consulta
+            // Ejecutamos la consulta
             ResultSet objResult = objPreparedStatement.executeQuery();
 
-            //6. Obtenemos la info
+            // Obtenemos la info
             while (objResult.next()){
-                Object objDB = getInfoObject(objResult);
+                T objDB = getInfoObject(objResult);
                 if (objDB == null) break;
 
-                // 8. Agregamos el objeto a la lista
+                // Agregamos el objeto a la lista
                 listObj.add(objDB);
             }
 
@@ -59,29 +57,29 @@ public abstract class BaseModel implements CRUD {
         return listObj;
     }
     @Override
-    public Object findById(int id) {
-        Object objDB = null;
+    public T findById(int id) {
+        T objDB = null;
 
-        // 1. Abrimos la conexión
+        // Abrimos la conexión
         if(!ConfigDB.openConnection()) return null;
 
-        // 2. Preparamos la consulta
+        // Preparamos la consulta
         String sql = "SELECT * FROM "+ this.nameTable +" WHERE id = ?;";
 
         try{
-            // 3. Preparamos  el PreparedStatement
+            // Preparamos  el PreparedStatement
             PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
             objPreparedStatement.setInt(1, id);
 
-            // 4. Ejecutamos la consulta
+            // Ejecutamos la consulta
             ResultSet objResult = objPreparedStatement.executeQuery();
 
             while (objResult.next()){
-                // 6. Obtenemos la info dependiendo del obj
+                // Obtenemos la info dependiendo del obj
                 objDB = getInfoObject(objResult);
             }
 
-            //5. Validamos si se encontraron datos con esa id
+            // Validamos si se encontraron datos con esa id
             if(objDB == null){
                 JOptionPane.showMessageDialog(null, "Not found data with that id");
             }
@@ -93,30 +91,30 @@ public abstract class BaseModel implements CRUD {
         return objDB;
     }
     @Override
-    public Object save(Object objSave) {
-        Object objDB = null;
+    public T save(T objSave) {
+        T newObj = null;
 
         try{
             // Abrimos la conexión
             if(!ConfigDB.openConnection()) return null;
 
-            //Buscamos todos los atributos
-            Field[] listAttributes = entity.getDeclaredFields();
+            // Buscamos todos los atributos
+            Field[] listAttributes = this.entityClass.getDeclaredFields();
 
-            //Preparamos el PreparedStatement
+            // Preparamos el PreparedStatement
             String sql = generateQueryInsert(listAttributes);
             PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-            //Recorremos la lista de atributos
+            // Recorremos la lista de atributos
             for (int i = 1; i<listAttributes.length; i++) {
-                //Obtenemos el nombre del atributo
+                // Obtenemos el nombre del atributo
                 Field attribute = listAttributes[i];
 
-                //Obtenemos el nombre del método get
+                // Obtenemos el nombre del método get
                 String nameMethodSet = getNameMethodGet(attribute);
 
-                //Obtenemos el método set del atributo y enviamos la información
-                Method methodGet = this.entity.getDeclaredMethod(nameMethodSet);
+                // Obtenemos el método set del atributo y enviamos la información
+                Method methodGet = this.entityClass.getDeclaredMethod(nameMethodSet);
                 objPreparedStatement.setObject(i,methodGet.invoke(objSave));
             }
 
@@ -127,38 +125,38 @@ public abstract class BaseModel implements CRUD {
             if(!objResult.next()) throw new SQLException("It wasn't posible to save");
 
             // Obtenemos el objeto guardado en la BD
-            objDB = this.findById(objResult.getInt(1));
+            newObj = this.findById(objResult.getInt(1));
 
         }catch (Exception e){
             System.err.println("Error to save class BaseModel\n"+e.getMessage());
         }
 
         ConfigDB.closeConnection();
-        return objDB;
+        return newObj;
     }
     @Override
-    public Object update(Object newObj) {
+    public T update(T newObj) {
         try{
             // Abrimos la conexión
             if(!ConfigDB.openConnection()) return null;
 
-            //Buscamos todos los atributos
-            Field[] listAttributes = entity.getDeclaredFields();
+            // Buscamos todos los atributos
+            Field[] listAttributes = this.entityClass.getDeclaredFields();
 
-            //Preparamos el PreparedStatement
+            // Preparamos el PreparedStatement
             String sql = generateQueryUpdate(listAttributes);
             PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
-            //Recorremos cada uno de los atributos
+            // Recorremos cada uno de los atributos
             for (int i = 0; i<listAttributes.length; i++) {
-                //Obtenemos el nombre del atributo
+                // Obtenemos el nombre del atributo
                 Field attribute = listAttributes[i];
                 String nameMethodGet = getNameMethodGet(attribute);
 
-                //Obtenemos el método get del atributo para enviar la información
-                Method methodGet = this.entity.getDeclaredMethod(nameMethodGet);
+                // Obtenemos el método get del atributo para enviar la información
+                Method methodGet = this.entityClass.getDeclaredMethod(nameMethodGet);
 
-                //Si el atributo es el id se asigna en el query al final
+                // Si el atributo es el id se asigna en el query al final
                 if(attribute.getName().equals("id")){
                     objPreparedStatement.setObject(listAttributes.length, methodGet.invoke(newObj));
                     continue;
@@ -180,21 +178,20 @@ public abstract class BaseModel implements CRUD {
     public boolean delete(int id) {
         boolean isDeleted = false;
 
-        // 1. abrimos la conexión
+        // Abrimos la conexión
         if(!ConfigDB.openConnection()) return false;
 
-        // 2. Preparamos la consulta
+        // Preparamos la consulta
         String sql = "DELETE FROM " + this.nameTable + " WHERE id = " + id;
 
         try {
-
-            // 3. Preparamos el PreparedStatement
+            // Preparamos el PreparedStatement
             PreparedStatement objPreparedStatement = ConfigDB.objConnection.prepareStatement(sql);
 
-            // 4. Ejecutamos la consulta
+            // Ejecutamos la consulta
             int rowsAffected = objPreparedStatement.executeUpdate();
 
-            // 5. Validamos si se afecto la tabla
+            // Validamos si se afecto la tabla
             if(rowsAffected <= 0){
                 JOptionPane.showMessageDialog(null, "Not found data with that id");
             }else {
@@ -208,14 +205,14 @@ public abstract class BaseModel implements CRUD {
         return isDeleted;
     }
 
-    public Object getInfoObject(ResultSet objResult){
-        Object obj = null;
+    public T getInfoObject(ResultSet objResult){
+        T obj = null;
         try {
             //Instanciamos el objeto
-            obj = entity.getDeclaredConstructor().newInstance();
+            obj = (T) this.entityClass.getDeclaredConstructor().newInstance();
 
             //Obtenemos los atributos del objeto
-            Field[] listAttributes = entity.getDeclaredFields();
+            Field[] listAttributes = this.entityClass.getDeclaredFields();
 
             //Recorremos la lista de atributos
             for (int i = 0; i < listAttributes.length; i++) {
@@ -225,7 +222,7 @@ public abstract class BaseModel implements CRUD {
                 //Creamos el método set del objeto
                 String nameMethodSet = getNameMethodSet(attribute);
                 Class<?> typeAttribute = attribute.getType();
-                Method methodSet = this.entity.getDeclaredMethod(nameMethodSet, typeAttribute);
+                Method methodSet = this.entityClass.getDeclaredMethod(nameMethodSet, typeAttribute);
 
                 //Obtenemos el valor del atributo desde la DB
                 Object valueAttribute = objResult.getObject(i + 1);
@@ -234,9 +231,9 @@ public abstract class BaseModel implements CRUD {
                 methodSet.invoke(obj, valueAttribute);
             }
         }catch (NoSuchMethodException e){
-                System.out.println("No se encontro el metodo\n" + e.getMessage());
+                System.out.println("Method not found\n" + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Error al obtener la info\n" + e);
+            System.out.println("Error get info\n" + e);
         }
 
         return obj;

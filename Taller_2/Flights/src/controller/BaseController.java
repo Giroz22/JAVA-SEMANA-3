@@ -6,45 +6,44 @@ import javax.swing.*;
 import java.util.List;
 import java.lang.reflect.Method;
 
-public abstract class  BaseController {
-    private BaseModel modelBase = null;
+public abstract class  BaseController<T extends Object, M extends BaseModel> {
 
-    public BaseController(BaseModel modelBase) {
+    private M modelBase;
+
+    public BaseController(M modelBase) {
         this.modelBase = modelBase;
     }
 
-    public abstract Object requestData(int id);
+    //Pide los datos de una entidad y devuelve un objeto con estos
+    public abstract T requestData(int id);
+    public abstract T requestData(int id, T obj);
 
+    //Obtiene y lista toda la información de una entidad
     public void getAll(){
-        //1. obtenemos la lista de autores
-        List<Object> listObj = modelBase.findAll();
-
-        //2.Validamos la info
+        List<T> listObj = modelBase.findAll();
         if(listObj.isEmpty()) return;
 
-        //3. Recorremos la lista
-        String strListObj =  getAll(listObj);
-
-
-        //4. Mostramos la info
+        String strListObj = getAll(listObj);
         JOptionPane.showMessageDialog(null, "List All:\n"+ strListObj);
     }
 
-    public String getAll(List<Object> listObj){
+    //Obtiene y devuelve una cadena con toda la información de una entidad
+    public String getAll(List<T> listObj){
         String strListObj =  "";
 
-        for( Object obj: listObj){
-            //3.Agregamos la info al string
+        for( T obj: listObj){
             strListObj += obj.toString() + "\n";
         }
 
         return strListObj;
     }
+
+    // Pide el id de una entidad para buscar su información
     public void getById(){
         try {
             int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Write id to find: "));
 
-            Object obj = modelBase.findById(id);
+            T obj = (T) modelBase.findById(id);
 
             if (obj == null) return;
 
@@ -55,30 +54,32 @@ public abstract class  BaseController {
             JOptionPane.showMessageDialog(null, "Error getId");
         }
     }
+
+    //Pide la información de un nuevo objeto y la almacena en la DB
     public void create(){
-        Object objSave = this.requestData(0);
+        T objSave = this.requestData(0);
         if(objSave == null) return;
 
-        Object objDB = this.modelBase.save(objSave);
+        T objDB = (T) this.modelBase.save(objSave);
         if(objDB == null) return;
 
         //Mostramos
         JOptionPane.showMessageDialog(null, "Add successful\n" + objDB.toString());
     }
+    //Pide la nueva información de un nuevo objeto y la almacena en la DB
     public void update(){
         try {
             // Obtenemos la info tanto del objeto nuevo como del antiguo
-            Object objOld = selectObject();
-            if (objOld == null) return; // Validamos la info
+            T objOld = this.selectObject();
+            if (objOld == null) return;
 
-            // Obtenemos el método getId() del objeto
+            // Invocamos el método getId() del objeto para obtener el ID
             Method getIdMethod = objOld.getClass().getMethod("getId");
-
-            // Invocamos el método getId() en el objeto para obtener el ID
             int idObj = (int) getIdMethod.invoke(objOld);
 
-            Object objUpdated = this.requestData(idObj);
-            if (objUpdated == null) return; // Validamos la info
+            //Pedimos la información
+            T objUpdated = this.requestData(idObj, objOld);
+            if (objUpdated == null) return;
 
             //Mostramos el mensaje de confirmación
             int isSure = JOptionPane.showConfirmDialog(null, "Are you sure of update?\n"
@@ -87,7 +88,7 @@ public abstract class  BaseController {
 
             if (isSure == 0) {
                 //Actualizamos el objeto
-                Object obj = this.modelBase.update(objUpdated);
+                T obj = (T) this.modelBase.update(objUpdated);
                 if (obj != null) {
                     JOptionPane.showMessageDialog(null, "Successfully updated");
                 }
@@ -98,10 +99,12 @@ public abstract class  BaseController {
             JOptionPane.showMessageDialog(null, "Error update " + e.getMessage());
         }
     }
+
+    //Eliminamos la informacion de un objeto
     public void delete(){
         try {
             //Obtenemos el objeto que se eliminara
-            Object obj = this.selectObject();
+            T obj = this.selectObject();
             if (obj == null) return; //Validamos
 
             //Mostramos el mensaje de confirmación
@@ -109,13 +112,13 @@ public abstract class  BaseController {
                     + obj.toString());
 
             if (isSure == 0) {
-                // Eliminamos el objeto
-                // Obtenemos el método getId() del objeto
-                Method getIdMethod = obj.getClass().getMethod("getId");
 
-                // Invocamos el método getId() en el objeto para obtener el ID
+                // Invocamos el método getId() del objeto para obtener el ID
+                Method getIdMethod = obj.getClass().getMethod("getId");
                 int idObj = (int) getIdMethod.invoke(obj);
-                if (!this.modelBase.delete(idObj)) return; // Validamos si se eliminó el objeto
+
+                boolean isDeleted = this.modelBase.delete(idObj);
+                if (!isDeleted) return; // Validamos si se eliminó el objeto
 
                 JOptionPane.showMessageDialog(null, "Successfully deleted");
             } else {
@@ -125,13 +128,14 @@ public abstract class  BaseController {
             JOptionPane.showMessageDialog(null, "Error occurred while deleting" + e.getMessage() );
         }
     }
+
     //Obtenemos todos los objetos y los mostramos para que el usuario seleccione cuál eliminará
-    public Object selectObject(){
-        Object objSelected = null;
+    public T selectObject(){
+        T objSelected = null;
 
         try{
-            Object[] listObj = this.modelBase.findAll().toArray();
-            objSelected = (JOptionPane.showInputDialog(
+            T[] listObj = (T[]) this.modelBase.findAll().toArray();
+            objSelected = (T) JOptionPane.showInputDialog(
                     null,
                     "Select an option:",
                     "Options",
@@ -139,7 +143,7 @@ public abstract class  BaseController {
                     null,
                     listObj,
                     listObj[0]
-            ));
+            );
         }catch (Exception e){
             JOptionPane.showMessageDialog(null, "Error select an object");
         }

@@ -2,10 +2,8 @@ package model;
 
 import entity.Reservation;
 
-public class ReservationModel extends BaseModel {
+public class ReservationModel extends BaseModel<Reservation> {
     public ReservationModel() {
-        super(Reservation.class);
+        super(new Reservation());
     }
-
-
 }
