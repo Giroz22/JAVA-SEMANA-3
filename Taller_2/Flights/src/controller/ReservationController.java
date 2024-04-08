@@ -3,7 +3,6 @@ package controller;
 import entity.Flight;
 import entity.Passenger;
 import entity.Reservation;
-import model.BaseModel;
 import model.FlightModel;
 import model.PassengerModel;
 import model.ReservationModel;
@@ -21,9 +20,11 @@ public class ReservationController extends BaseController<Reservation, Reservati
     @Override
     public Reservation requestData(int id) {
         PassengerModel  objPassengerModel = new PassengerModel();
-        Object[] listPassenger = objPassengerModel.findAll().toArray();
         FlightModel objFlightModel = new FlightModel();
-        Object[] listFlight = objFlightModel.findAll().toArray();
+
+        Passenger[] listPassenger = objPassengerModel.findAll().toArray(new Passenger[0]);
+        Flight[] listFlight =  objFlightModel.findAll().toArray(new Flight[0]);
+
         return new Reservation(
                 id,
                 ((Passenger)(JOptionPane.showInputDialog(
@@ -59,8 +60,8 @@ public class ReservationController extends BaseController<Reservation, Reservati
         PassengerModel  objPassengerModel = new PassengerModel();
         FlightModel objFlightModel = new FlightModel();
 
-        Object[] listPassenger = objPassengerModel.findAll().toArray();
-        Object[] listFlight =  objFlightModel.findAll().toArray();
+        Passenger[] listPassenger = objPassengerModel.findAll().toArray(new Passenger[0]);
+        Flight[] listFlight =  objFlightModel.findAll().toArray(new Flight[0]);
 
         return new Reservation(
                 id,
@@ -71,7 +72,7 @@ public class ReservationController extends BaseController<Reservation, Reservati
                         JOptionPane.QUESTION_MESSAGE,
                         null,
                         listPassenger,
-                        Arrays.stream((Passenger[])listPassenger).filter(p-> p.getId() == objReservation.getId_passenger())
+                        Arrays.stream(listPassenger).filter(p-> p.getId() == objReservation.getId_passenger()).toArray()[0]
 
                 ))).getId(),
                 ((Flight)(JOptionPane.showInputDialog(
@@ -81,12 +82,12 @@ public class ReservationController extends BaseController<Reservation, Reservati
                         JOptionPane.QUESTION_MESSAGE,
                         null,
                         listFlight,
-                        Arrays.stream((Flight[])listFlight).filter(f-> f.getId() == objReservation.getId_flight())
+                        Arrays.stream(listFlight).filter(f-> f.getId() == objReservation.getId_flight()).toArray()[0]
                 ))).getId(),
                 Date.valueOf(
                         JOptionPane.showInputDialog(null, "Enter the Date of reservation (yyyy-mm-dd)", objReservation.getDate_reservation().toString())
                 ),
-                JOptionPane.showInputDialog(null, "Writes the seat")
+                JOptionPane.showInputDialog(null, "Writes the seat",objReservation.getSeat())
         );
     }
 }

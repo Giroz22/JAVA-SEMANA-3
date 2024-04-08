@@ -12,10 +12,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseModel<T extends Object> implements CRUD<T> {
+public abstract class BaseModel<T> implements CRUD<T> {
 
     private final String nameTable;
-    private Class entityClass;
+    private final Class<?> entityClass;
 
     public BaseModel(T entity)  {
         this.entityClass = entity.getClass();
